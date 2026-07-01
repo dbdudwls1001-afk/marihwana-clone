@@ -20,6 +20,10 @@
   </div>
   <span class="header-title"><span class="title-emoji">💵</span><span class="title-text">에셋 모으기</span><span class="title-emoji">💵</span></span>
   <div class="header-right">
+    <span class="sync-status" id="syncStatus" style="display:none"></span>
+    <button class="btn-sync" id="syncAuthBtn" onclick="syncAuthToggle()" style="display:none" title="구글 계정으로 로그인하여 여러 기기 동기화">
+      <span id="syncAuthIcon">☁️</span><span class="btn-sync-label" id="syncAuthLabel">로그인</span>
+    </button>
     <button class="btn-backup" onclick="openBackupModal()" title="전체 데이터 백업 / 복원">
       <span>💾</span><span class="btn-backup-label">백업/복원</span>
     </button>
@@ -548,6 +552,12 @@
 <img id="srcThumbPopup" alt="">
 
 <script src="app.js"></script>
+<!-- 크로스디바이스 동기화 (Firebase). firebase-config.js 를 채우면 활성화, 비우면 로컬 단독 동작 -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="sync.js"></script>
 
 <!-- ===== 사용설명서 ===== -->
 <div style="max-width:1200px;margin:40px auto 20px;padding:0 24px;">
