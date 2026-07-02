@@ -176,10 +176,10 @@ function renderBgmTable() {
           onerror="this.style.display='none'" alt="">`
       : '';
     const thumbHtml = (thumbImg && b.url)
-      ? `<a href="${esc(safeUrl(b.url))}" target="_blank" rel="noopener noreferrer" title="유튜브에서 열기" style="display:block;flex-shrink:0;">${thumbImg}</a>`
+      ? extLink(b.url, thumbImg, 'title="유튜브에서 열기" style="display:block;flex-shrink:0;"')
       : thumbImg;
     const linkBtn = b.url
-      ? `<a href="${esc(safeUrl(b.url))}" target="_blank" rel="noopener noreferrer" title="유튜브에서 열기" style="text-decoration:none;font-size:18px;">▶️</a>`
+      ? extLink(b.url, '▶️', 'title="유튜브에서 열기" style="text-decoration:none;font-size:18px;"')
       : '';
     const favIcon = b.fav ? '⭐' : '☆';
     return `
@@ -772,8 +772,8 @@ function renderTChannelTable() {
     <tr>
       ${selCell('tchannel',c.id)}
       <td>${esc(c.platform)}</td>
-      <td>${c.url ? `<a href="${esc(safeUrl(c.url))}" target="_blank" rel="noopener noreferrer">${esc(c.name)}</a>` : esc(c.name)}</td>
-      <td>${c.url ? `<a href="${esc(safeUrl(c.url))}" target="_blank" rel="noopener noreferrer">🔗</a>` : '-'}</td>
+      <td>${c.url ? extLink(c.url, esc(c.name)) : esc(c.name)}</td>
+      <td>${c.url ? extLink(c.url, '🔗') : '-'}</td>
       <td>${esc(c.reason||'-')}</td>
       <td>${esc(c.style||'-')}</td>
       <td class="cell-actions">
@@ -812,8 +812,8 @@ function renderTSourceTable() {
     <tr>
       ${selCell('tsource',s.id)}
       <td>${esc(s.platform)}</td>
-      <td>${s.url ? `<a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a>` : esc(s.title)}</td>
-      <td>${s.url ? `<a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener noreferrer">🔗</a>` : '-'}</td>
+      <td>${s.url ? extLink(s.url, esc(s.title)) : esc(s.title)}</td>
+      <td>${s.url ? extLink(s.url, '🔗') : '-'}</td>
       <td>${esc(s.reason||'-')}</td>
       <td>${esc(s.style||'-')}</td>
       <td class="cell-actions">
@@ -949,7 +949,7 @@ function renderChannelTable() {
     <tr>
       ${selCell('channel',c.id)}
       <td>${c.url
-        ? `<a href="${esc(safeUrl(c.url))}" target="_blank" rel="noopener noreferrer">${esc(c.name)}</a>`
+        ? extLink(c.url, esc(c.name))
         : (c.channelId
             ? `<a href="https://www.youtube.com/channel/${encodeURIComponent(c.channelId)}" target="_blank" rel="noopener noreferrer">${esc(c.name)}</a>`
             : esc(c.name))}</td>
@@ -1031,7 +1031,9 @@ function renderSourceTable() {
         <div class="src-title-cell">
           ${thumbHtml}
           <div class="src-title-text">
-            <a href="${esc(linkUrl)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a>
+            ${linkUrl === '#'
+              ? `<span>${esc(s.title)}</span>`
+              : `<a href="${esc(linkUrl)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a>`}
           </div>
         </div>
       </td>
@@ -1858,15 +1860,33 @@ function cleanLabel(s) {
   return (s || '').toString().replace(/['"<>]/g, '').trim();
 }
 
-// ===== URL 안전화 (위험 스킴 차단) =====
-// http/https 절대주소만 통과, javascript: 등은 '#' 으로 막음
+// ===== URL 안전화 (위험 스킴 차단 + 스킴 누락 복구) =====
+// 1) http/https 절대주소는 그대로 통과
+// 2) 스킴 없는 주소(예: "www.youtube.com/@x")는 https:// 를 붙여 재검증해 실제로 열리게 복구
+// 3) javascript:/data: 등 위험·비웹 스킴과 그래도 무효인 값만 '#' 반환
 function safeUrl(url) {
   url = (url || '').trim();
+  if (!url) return '#';
   try {
     const u = new URL(url);
     if (u.protocol === 'http:' || u.protocol === 'https:') return url;
+    return '#'; // javascript:, data:, mailto: 등 비웹 스킴 차단
+  } catch(e) {}
+  // 스킴 누락 케이스 복구: https:// 를 붙여 유효한 호스트면 채택
+  try {
+    const u2 = new URL('https://' + url);
+    if (u2.hostname.includes('.')) return 'https://' + url;
   } catch(e) {}
   return '#';
+}
+
+// ===== 외부 링크 렌더 (유효 링크만 <a>, 무효('#')는 클릭 무반응 <span>) =====
+// 죽은 '#' 앵커(클릭 시 상단 스크롤/새 탭 재로딩)를 제거하기 위한 공통 헬퍼.
+function extLink(rawUrl, innerHtml, attrs) {
+  const u = safeUrl(rawUrl);
+  const extra = attrs ? ' ' + attrs : '';
+  if (u === '#') return `<span${extra}>${innerHtml}</span>`;
+  return `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer"${extra}>${innerHtml}</a>`;
 }
 
 // ===== CSV 셀 안전 처리 =====
