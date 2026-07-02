@@ -31,11 +31,24 @@ function cleanLabel(s) {
 
 function safeUrl(url) {
   url = (url || '').trim();
+  if (!url) return '#';
   try {
     const u = new URL(url);
     if (u.protocol === 'http:' || u.protocol === 'https:') return url;
-  } catch (e) {}
+    return '#';
+  } catch(e) {}
+  try {
+    const u2 = new URL('https://' + url);
+    if (u2.hostname.includes('.')) return 'https://' + url;
+  } catch(e) {}
   return '#';
+}
+
+function extLink(rawUrl, innerHtml, attrs) {
+  const u = safeUrl(rawUrl);
+  const extra = attrs ? ' ' + attrs : '';
+  if (u === '#') return `<span${extra}>${innerHtml}</span>`;
+  return `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer"${extra}>${innerHtml}</a>`;
 }
 
 function csvCell(v) {
@@ -185,7 +198,7 @@ function checkUsageReset(ls) {
 
 module.exports = {
   LocalStorageMock,
-  esc, cleanLabel, safeUrl, csvCell, safeFileName,
+  esc, cleanLabel, safeUrl, extLink, csvCell, safeFileName,
   channelDedupKey, extractYouTubeId, bgmDedupMatch,
   toIntCSV, parseCSVRows, fmtNum, fmtDate,
   BACKUP_APP_ID, BACKUP_SCHEMA_VERSION, BACKUP_KEYS,
