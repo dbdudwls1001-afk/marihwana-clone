@@ -161,11 +161,12 @@ describe('T13-4: LWW 워터마크 에코억제 로직 (정적 검증)', () => {
     expect(syncSrc).toContain('SYNC_META_KEY');
     expect(syncSrc).toContain('payload.exportedAt');
   });
-  test('applyRemote 에서도 SYNC_META_KEY 기록', () => {
-    // applyRemote 에서 localStorage.setItem(SYNC_META_KEY, p.exportedAt)
-    const applyBlock = syncSrc.match(/function applyRemote[\s\S]+?^  }/m);
-    expect(applyBlock).not.toBeNull();
-    expect(applyBlock[0]).toContain('SYNC_META_KEY');
+  test('doApplyRemote 에서 SYNC_META_KEY 기록 (applyRemote→doApplyRemote 분리 리팩토링 반영)', () => {
+    // applyRemote가 dirty-guard 래퍼로 분리되어 실제 적용 로직은 doApplyRemote에 있음.
+    // SYNC_META_KEY 기록은 doApplyRemote 블록에서 검증.
+    const doApplyBlock = syncSrc.match(/function doApplyRemote[\s\S]+?^  }/m);
+    expect(doApplyBlock).not.toBeNull();
+    expect(doApplyBlock[0]).toContain('SYNC_META_KEY');
   });
 });
 
