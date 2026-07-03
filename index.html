@@ -51,7 +51,7 @@
   <div id="tab-channel" class="tab-content">
     <div class="input-section">
       <div class="input-row">
-        <input class="input-field" id="ch-url" placeholder="채널 또는 쇼츠 링크 입력">
+        <input class="input-field" id="ch-url" placeholder="채널 또는 쇼츠 링크 입력" oninput="saveDraft('ch-url')">
         <button class="btn btn-primary" onclick="fetchChannel()">불러오기</button>
       </div>
       <div class="input-row">
@@ -62,11 +62,11 @@
           </button>
           <div class="ct-dropdown-panel" id="ch-ct-panel"></div>
         </div>
-        <input class="input-field" id="ch-reason" placeholder="스크랩 이유">
+        <input class="input-field" id="ch-reason" placeholder="스크랩 이유" oninput="saveDraft('ch-reason')">
       </div>
       <div class="input-row">
-        <input class="input-field" id="ch-ref" placeholder="레퍼런스">
-        <input class="input-field" id="ch-style" placeholder="결">
+        <input class="input-field" id="ch-ref" placeholder="레퍼런스" oninput="saveDraft('ch-ref')">
+        <input class="input-field" id="ch-style" placeholder="결" oninput="saveDraft('ch-style')">
       </div>
       <div class="input-row">
         <button class="btn btn-primary" onclick="saveChannel()" style="margin-left:auto;">저장</button>
@@ -122,7 +122,7 @@
   <div id="tab-source" class="tab-content" style="display:none;">
     <div class="input-section">
       <div class="input-row">
-        <input class="input-field" id="src-url" placeholder="영상 링크 입력">
+        <input class="input-field" id="src-url" placeholder="영상 링크 입력" oninput="saveDraft('src-url')">
         <button class="btn btn-primary" onclick="fetchSource()">불러오기</button>
       </div>
       <div class="input-row">
@@ -133,13 +133,13 @@
           </button>
           <div class="ct-dropdown-panel" id="src-ct-panel"></div>
         </div>
-        <input class="input-field" id="src-reason" placeholder="스크랩 이유">
+        <input class="input-field" id="src-reason" placeholder="스크랩 이유" oninput="saveDraft('src-reason')">
       </div>
       <div class="input-row">
-        <textarea class="input-field" id="src-content" placeholder="내용"></textarea>
+        <textarea class="input-field" id="src-content" placeholder="내용" oninput="saveDraft('src-content')"></textarea>
       </div>
       <div class="input-row">
-        <input class="input-field" id="src-style" placeholder="결">
+        <input class="input-field" id="src-style" placeholder="결" oninput="saveDraft('src-style')">
         <button class="btn btn-primary" onclick="saveSource()" style="margin-left:auto;">저장</button>
       </div>
     </div>
@@ -192,11 +192,11 @@
   <div id="tab-bgm" class="tab-content" style="display:none;">
     <div class="input-section">
       <div class="input-row">
-        <input class="input-field" id="bgm-url" placeholder="유튜브 링크 (또는 다른 출처)">
+        <input class="input-field" id="bgm-url" placeholder="유튜브 링크 (또는 다른 출처)" oninput="saveDraft('bgm-url')">
         <button class="btn btn-primary" onclick="fetchBgm()">불러오기</button>
       </div>
       <div class="input-row">
-        <input class="input-field" id="bgm-title" placeholder="곡명 (자동 입력 후 수정 가능)">
+        <input class="input-field" id="bgm-title" placeholder="곡명 (자동 입력 후 수정 가능)" oninput="saveDraft('bgm-title')">
       </div>
       <div class="input-row">
         <div class="ct-dropdown-wrap">
@@ -206,7 +206,7 @@
           </button>
           <div class="ct-dropdown-panel" id="bgm-mood-panel"></div>
         </div>
-        <input class="input-field" id="bgm-memo" placeholder="메모 (사용한 영상, 특징 등)">
+        <input class="input-field" id="bgm-memo" placeholder="메모 (사용한 영상, 특징 등)" oninput="saveDraft('bgm-memo')">
       </div>
       <div class="input-row">
         <button class="btn btn-primary" onclick="saveBgm()" style="margin-left:auto;">저장</button>
@@ -264,10 +264,10 @@
           </button>
           <div class="ct-dropdown-panel" id="tch-pf-panel"></div>
         </div>
-        <input class="input-field" id="tch-name" placeholder="채널명">
+        <input class="input-field" id="tch-name" placeholder="채널명" oninput="saveDraft('tch-name')">
       </div>
       <div class="input-row">
-        <input class="input-field" id="tch-url" placeholder="채널 링크">
+        <input class="input-field" id="tch-url" placeholder="채널 링크" oninput="saveDraft('tch-url')">
       </div>
       <div class="input-row">
         <input class="input-field" id="tch-reason" placeholder="벤치마킹 이유">
@@ -332,10 +332,10 @@
           </button>
           <div class="ct-dropdown-panel" id="tsr-pf-panel"></div>
         </div>
-        <input class="input-field" id="tsr-title" placeholder="제목/내용 요약">
+        <input class="input-field" id="tsr-title" placeholder="제목/내용 요약" oninput="saveDraft('tsr-title')">
       </div>
       <div class="input-row">
-        <input class="input-field" id="tsr-url" placeholder="링크">
+        <input class="input-field" id="tsr-url" placeholder="링크" oninput="saveDraft('tsr-url')">
       </div>
       <div class="input-row">
         <input class="input-field" id="tsr-reason" placeholder="스크랩 이유">

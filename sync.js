@@ -29,6 +29,8 @@
   var unsubDoc = null;      // onSnapshot 해제 함수
   var pushTimer = null;     // debounce 타이머
   var applyingRemote = false;
+  var pendingRemote = null; // 사용자가 입력 중이라 보류된 원격 payload (dirty-guard)
+  var pendingTimer = null;  // 보류분 재시도 타이머
 
   function syncKeys() {
     // BACKUP_KEYS 는 app.js 전역. 없으면 안전 폴백.
@@ -68,8 +70,35 @@
     return true;
   }
 
-  // ---- 원격 → 로컬 적용: SYNC_KEYS 만 교체 후 리로드(모든 상태 재초기화, 가장 안전) ----
+  // 사용자가 데이터 입력 필드에 작성 중인지(app.js 의 hasUnsavedInput 위임)
+  function userIsTyping() {
+    return (typeof hasUnsavedInput === 'function') && hasUnsavedInput();
+  }
+
+  // ---- 원격 → 로컬 적용 ----
+  // (a) dirty-guard: 사용자가 입력 중이면 즉시 반영하지 않고 보류했다가, 입력이 끝나면 반영.
+  // (b) 전체 페이지 리로드 대신 상태변수 재적용 + 재렌더(작성 중 텍스트/포커스 보존).
   function applyRemote(p) {
+    if (!isValidPayload(p)) { return; }
+    if (userIsTyping()) {
+      // 최신 원격 상태만 보관(LWW). 입력 종료 감지되면 반영.
+      pendingRemote = p;
+      setStatus('syncing');
+      if (!pendingTimer) {
+        pendingTimer = setInterval(function () {
+          if (userIsTyping() || !pendingRemote) return;
+          var q = pendingRemote;
+          pendingRemote = null;
+          clearInterval(pendingTimer); pendingTimer = null;
+          doApplyRemote(q);
+        }, 1000);
+      }
+      return;
+    }
+    doApplyRemote(p);
+  }
+
+  function doApplyRemote(p) {
     if (!isValidPayload(p)) { return; }
     try {
       applyingRemote = true;
@@ -80,9 +109,17 @@
       });
       localStorage.setItem(SYNC_META_KEY, p.exportedAt || '');
       setStatus('applied', p.exportedAt);
-      notify('다른 기기의 변경을 불러왔습니다. 새로고침합니다…', 'success');
-      // 상태변수 재초기화가 가장 확실 → 전체 리로드
-      setTimeout(function () { location.reload(); }, 600);
+      // (b) 리로드 대신 앱 상태변수 재적용 + 재렌더 — 작성 중 입력·포커스·스크롤 보존
+      if (typeof reloadStateAndRender === 'function') {
+        reloadStateAndRender();
+        notify('다른 기기의 변경을 불러왔습니다.', 'success');
+        applyingRemote = false;
+        setStatus('synced', p.exportedAt);
+      } else {
+        // 폴백: 재렌더 훅이 없으면 기존 방식(전체 리로드)
+        notify('다른 기기의 변경을 불러왔습니다. 새로고침합니다…', 'success');
+        setTimeout(function () { location.reload(); }, 600);
+      }
     } catch (e) {
       applyingRemote = false;
       notify('동기화 적용 실패: ' + (e && e.message ? e.message : e), 'error');

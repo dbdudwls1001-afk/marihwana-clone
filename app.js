@@ -47,7 +47,68 @@ document.addEventListener('DOMContentLoaded', () => {
   renderTSourceTable();
   buildPlatformDropdown('tch');
   buildPlatformDropdown('tsr');
+  restoreDrafts();
 });
+
+// ===== 입력 임시저장(draft) + 미저장 감지 =====
+// 동기화/브라우저 리로드로 작성 중 텍스트가 유실되는 것을 막는다.
+// draft 는 기기 로컬 전용 별도 키(dontong_draft_*)로만 저장 — 기존 데이터 스키마/키·동기화 대상 불변.
+const DRAFT_FIELD_IDS = [
+  'ch-url','ch-reason','ch-ref','ch-style',
+  'src-url','src-reason','src-content','src-style',
+  'bgm-url','bgm-title','bgm-memo',
+  'tch-name','tch-url',
+  'tsr-title','tsr-url'
+];
+function draftKey(id) { return 'dontong_draft_' + id; }
+function saveDraft(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const v = el.value;
+  if (v && v.trim() !== '') localStorage.setItem(draftKey(id), v);
+  else localStorage.removeItem(draftKey(id));
+}
+function clearDrafts(ids) {
+  (ids || DRAFT_FIELD_IDS).forEach(id => localStorage.removeItem(draftKey(id)));
+}
+function restoreDrafts() {
+  DRAFT_FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el || (el.value && el.value.trim() !== '')) return;
+    const v = localStorage.getItem(draftKey(id));
+    if (v != null && v !== '') el.value = v;
+  });
+}
+// 데이터 입력 필드에 미저장 텍스트가 있거나 그 필드에 포커스 중이면 true (동기화 dirty-guard 용)
+function hasUnsavedInput() {
+  const active = document.activeElement;
+  for (const id of DRAFT_FIELD_IDS) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    if (el.value && el.value.trim() !== '') return true;
+    if (active && active === el) return true;
+  }
+  return false;
+}
+// 동기화로 원격 데이터가 로컬에 반영된 뒤, 페이지 리로드 없이 상태변수를 다시 읽어 재렌더한다 (sync.js 가 호출).
+function reloadStateAndRender() {
+  channels    = JSON.parse(localStorage.getItem('dontong_channels')    || '[]');
+  sources     = JSON.parse(localStorage.getItem('dontong_sources')     || '[]');
+  customTypes = JSON.parse(localStorage.getItem('dontong_ctypes')      || '[]');
+  favTypes    = JSON.parse(localStorage.getItem('dontong_favtypes')    || '[]');
+  bgms        = JSON.parse(localStorage.getItem('dontong_bgms')        || '[]');
+  tchannels   = JSON.parse(localStorage.getItem('dontong_tchannels')   || '[]');
+  tsources    = JSON.parse(localStorage.getItem('dontong_tsources')    || '[]');
+  customMoods = JSON.parse(localStorage.getItem('dontong_bgm_moods')   || '[]');
+  favMoods    = JSON.parse(localStorage.getItem('dontong_bgm_favmoods')|| '[]');
+  renderChannelTable();
+  renderSourceTable();
+  renderBgmTable();
+  renderTChannelTable();
+  renderTSourceTable();
+  updateFilterOptions();
+  updateBgmFilterOptions();
+}
 
 
 // ===== EASTER EGG =====
@@ -99,6 +160,7 @@ async function fetchBgm() {
 
     const v = data.items[0];
     document.getElementById('bgm-title').value = v.snippet.title;
+    saveDraft('bgm-title');
     toast(`✅ "${v.snippet.title}" 불러옴`, 'success');
   } catch(e) {
     toast('오류: ' + e.message, 'error');
@@ -125,6 +187,7 @@ function saveBgm() {
   document.getElementById('bgm-title').value = '';
   document.getElementById('bgm-url').value = '';
   document.getElementById('bgm-memo').value = '';
+  clearDrafts(['bgm-title','bgm-url','bgm-memo']);
   bgmSelectedMood = '';
   document.getElementById('bgm-mood-label').textContent = '분위기 선택';
 
@@ -574,6 +637,7 @@ function clearChannelInputs() {
   document.getElementById('ch-reason').value = '';
   document.getElementById('ch-ref').value = '';
   document.getElementById('ch-style').value = '';
+  clearDrafts(['ch-url','ch-reason','ch-ref','ch-style']);
   chSelectedType = '';
   document.getElementById('ch-ct-label').textContent = '콘텐츠 유형 선택';
 }
@@ -651,6 +715,7 @@ function clearSourceInputs() {
   document.getElementById('src-reason').value = '';
   document.getElementById('src-content').value = '';
   document.getElementById('src-style').value = '';
+  clearDrafts(['src-url','src-reason','src-content','src-style']);
   srcSelectedType = '';
   document.getElementById('src-ct-label').textContent = '콘텐츠 유형 선택';
 }
@@ -711,6 +776,7 @@ function saveTChannel() {
   // 입력 초기화
   document.getElementById('tch-name').value = '';
   document.getElementById('tch-url').value = '';
+  clearDrafts(['tch-name','tch-url']);
   document.getElementById('tch-reason').value = '';
   document.getElementById('tch-style').value = '';
   tchSelectedPlatform = '';
@@ -737,6 +803,7 @@ function saveTSource() {
   renderTSourceTable();
   document.getElementById('tsr-title').value = '';
   document.getElementById('tsr-url').value = '';
+  clearDrafts(['tsr-title','tsr-url']);
   document.getElementById('tsr-reason').value = '';
   document.getElementById('tsr-style').value = '';
   tsrSelectedPlatform = '';
