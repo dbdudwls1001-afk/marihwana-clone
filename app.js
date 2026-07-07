@@ -257,6 +257,7 @@ function renderBgmTable() {
       <td>${esc(b.mood||'-')}</td>
       <td>${esc(b.memo||'-')}</td>
       <td>${linkBtn}</td>
+      <td>${fmtDate(b.date)}</td>
       <td class="cell-actions">
         <button class="fav-btn${b.fav?' fav-on':''}" onclick="toggleFavItem('bgm',${b.id})" title="즐겨찾기">${favIcon}</button>
         <button onclick="editItem('bgm',${b.id})" title="수정">✏️</button>
@@ -730,6 +731,7 @@ function fmtNum(n) {
 function fmtDate(iso) {
   if (!iso) return '-';
   const d = new Date(iso);
+  if (isNaN(d.getTime())) return '-';
   return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
 }
 
@@ -843,6 +845,7 @@ function renderTChannelTable() {
       <td>${c.url ? extLink(c.url, '🔗') : '-'}</td>
       <td>${esc(c.reason||'-')}</td>
       <td>${esc(c.style||'-')}</td>
+      <td>${fmtDate(c.date)}</td>
       <td class="cell-actions">
         <button class="fav-btn${c.fav?' fav-on':''}" onclick="toggleFavItem('tchannel',${c.id})" title="즐겨찾기">${c.fav?'⭐':'☆'}</button>
         <button onclick="editTItem('tchannel',${c.id})" title="수정">✏️</button>
@@ -883,6 +886,7 @@ function renderTSourceTable() {
       <td>${s.url ? extLink(s.url, '🔗') : '-'}</td>
       <td>${esc(s.reason||'-')}</td>
       <td>${esc(s.style||'-')}</td>
+      <td>${fmtDate(s.date)}</td>
       <td class="cell-actions">
         <button class="fav-btn${s.fav?' fav-on':''}" onclick="toggleFavItem('tsource',${s.id})" title="즐겨찾기">${s.fav?'⭐':'☆'}</button>
         <button onclick="editTItem('tsource',${s.id})" title="수정">✏️</button>
@@ -1028,6 +1032,7 @@ function renderChannelTable() {
       <td>${esc(c.reason||'-')}</td>
       <td>${esc(c.ref||'-')}</td>
       <td>${esc(c.style||'-')}</td>
+      <td>${fmtDate(c.date)}</td>
       <td class="cell-actions">
         <button class="fav-btn${c.fav?' fav-on':''}" onclick="toggleFavItem('channel',${c.id})" title="즐겨찾기">${c.fav?'⭐':'☆'}</button>
         <button onclick="editItem('channel',${c.id})" title="수정">✏️</button>
@@ -1111,6 +1116,7 @@ function renderSourceTable() {
       <td>${esc(s.reason||'-')}</td>
       <td>${esc(s.content||'-')}</td>
       <td>${esc(s.style||'-')}</td>
+      <td>${fmtDate(s.date)}</td>
       <td class="cell-actions">
         <button class="fav-btn${s.fav?' fav-on':''}" onclick="toggleFavItem('source',${s.id})" title="즐겨찾기">${s.fav?'⭐':'☆'}</button>
         <button onclick="editItem('source',${s.id})" title="수정">✏️</button>
